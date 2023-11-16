@@ -3,7 +3,7 @@ module github.com/datachainlab/yui-relayer-build
 go 1.20
 
 replace (
-	github.com/datachainlab/ethereum-ibc-relay-chain => github.com/datachainlab/ethereum-ibc-relay-chain v0.2.8-0.20231116120136-ba599ea9df1f
+	github.com/datachainlab/ethereum-ibc-relay-chain => github.com/datachainlab/ethereum-ibc-relay-chain v0.2.8-0.20231120005221-a039f505e446
 	github.com/hyperledger-labs/yui-relayer v0.4.17 => github.com/datachainlab/yui-relayer v0.1.1-0.20231116030728-4a1395b3c8d9
 )
 
