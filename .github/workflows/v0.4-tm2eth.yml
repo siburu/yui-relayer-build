@@ -19,7 +19,7 @@ jobs:
         uses: lewagon/wait-on-check-action@v1.3.1
         with:
           ref: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.sha) || github.sha }}
-          check-regexp: '(relayer|tendermint)-build'
+          check-regexp: '(relayer|tendermint|ethereum)-build'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           wait-interval: 30
       - name: Restore relayer binary cache
