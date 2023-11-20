@@ -1,6 +1,6 @@
 #!/bin/sh
 
-node "/app/ganache-core.docker.cli.js" \
+node "/app/dist/node/cli.js" \
   --chainId $CHAINID \
   --networkId $NETWORKID \
   --db /root/.ethereum \

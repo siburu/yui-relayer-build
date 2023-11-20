@@ -1,4 +1,4 @@
-FROM trufflesuite/ganache-cli:v6.12.2
+FROM trufflesuite/ganache:v7.9.1
 
 ARG CHAINID
 ARG NETWORKID
