@@ -7,7 +7,10 @@ source ${SCRIPT_DIR}/util/relayer-util
 
 rm -rf ${RELAYER_CONF} &> /dev/null
 
-sleep 10
+ID=${1:-0}
+
+jq "((.src, .dst).\"client-id\" |= \"mock-client-$ID\") | ((.src, .dst).\"connection-id\" |= \"connection-$ID\")" < ${CONF_DIR}/path.json > ${CONF_DIR}/path-x.json
+mv ${CONF_DIR}/path-x.json ${CONF_DIR}/path.json
 
 ${RLY} config init
 ${RLY} chains add-dir ${CONF_DIR}/chains/
