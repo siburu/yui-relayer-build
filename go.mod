@@ -2,7 +2,7 @@ module github.com/datachainlab/yui-relayer-build
 
 go 1.20
 
-replace github.com/datachainlab/ethereum-ibc-relay-chain => github.com/siburu/ethereum-ibc-relay-chain v0.0.0-20240425080940-f6fc68e2d4d3
+replace github.com/datachainlab/ethereum-ibc-relay-chain => github.com/siburu/ethereum-ibc-relay-chain v0.0.0-20240425234055-0cd6f633ac0f
 
 replace (
 	// https://github.com/cosmos/cosmos-sdk/blob/v0.47.3/go.mod#L171-L182
