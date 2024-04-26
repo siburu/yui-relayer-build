@@ -23,17 +23,21 @@ network-down:
 custom-error-test:
 	./scripts/init-rly
 	./scripts/create-clients
-	./scripts/create-clients # error case 1
+	./scripts/create-clients # error case 1 (tranditional require)
 	./scripts/create-connection
 	./scripts/init-rly 1
 	./scripts/create-clients
-	./scripts/create-clients # error case 2
+	./scripts/create-clients # error case 2 (tranditional revert)
 	./scripts/create-connection
 	./scripts/init-rly 2
 	./scripts/create-clients
-	./scripts/create-clients # error case 3
+	./scripts/create-clients # error case 3 (known custom error)
 	./scripts/create-connection
 	./scripts/init-rly 3
 	./scripts/create-clients
-	./scripts/create-clients # error case 0
+	./scripts/create-clients # error case 4 (arithmetic overflow)
+	./scripts/create-connection
+	./scripts/init-rly 4
+	./scripts/create-clients
+	./scripts/create-clients # error case 0 (unknown custom error)
 	./scripts/create-connection
