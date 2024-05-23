@@ -415,8 +415,6 @@ github.com/creack/pty v1.1.7/go.mod h1:lj5s0c3V2DBrqTV7llrYr5NG6My20zk30Fl46Y7Do
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/danieljoos/wincred v1.1.2 h1:QLdCxFs1/Yl4zduvBdcHB8goaYk9RARS2SgLLRuAyr0=
 github.com/danieljoos/wincred v1.1.2/go.mod h1:GijpziifJoIBfYh+S7BbkdUTU4LfM+QnGqR5Vl2tAx0=
-github.com/datachainlab/ethereum-ibc-relay-chain v0.3.2 h1:obAxG44znqLUY0wpsTeRrWlQ/A6ls0uYLL1USEM5nko=
-github.com/datachainlab/ethereum-ibc-relay-chain v0.3.2/go.mod h1:PdSsegkRJiMWVGq+afDtXKRKg4p8hnmR1Yj5BgXkit0=
 github.com/datachainlab/ibc-mock-client v0.4.1 h1:FQfyFOodgnchCIicpS7Vzji3yxXDe4Jl5hmE5Vz7M1s=
 github.com/datachainlab/ibc-mock-client v0.4.1/go.mod h1:2wGddiF2uHFhiMBpSskzKT/wA8naXi5DLoXt1KEZA1o=
 github.com/davecgh/go-spew v0.0.0-20171005155431-ecdeabc65495/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -1049,6 +1047,8 @@ github.com/sean-/seed v0.0.0-20170313163322-e2103e2c3529/go.mod h1:DxrIzT+xaE7yg
 github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible h1:Bn1aCHHRnjv4Bl16T8rcaFjYSrGrIZvpiGO6P3Q4GpU=
 github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible/go.mod h1:5b4v6he4MtMOwMlS0TUMTu2PcXUg8+E1lC7eC3UO/RA=
 github.com/shurcooL/sanitized_anchor_name v1.0.0/go.mod h1:1NzhyTcUVG4SuEtjjoZeVRXNmyL/1OwPU0+IJeTBvfc=
+github.com/siburu/ethereum-ibc-relay-chain v0.0.0-20240526231719-71c6368e40d4 h1:06jV8ZOyv0qi00o2HGsvmJNefp3cTjlnPLcFoetpB6M=
+github.com/siburu/ethereum-ibc-relay-chain v0.0.0-20240526231719-71c6368e40d4/go.mod h1:PdSsegkRJiMWVGq+afDtXKRKg4p8hnmR1Yj5BgXkit0=
 github.com/sirupsen/logrus v1.2.0/go.mod h1:LxeOpSwHxABJmUn/MG1IvRgCAasNZTLOkJPxbbu5VWo=
 github.com/sirupsen/logrus v1.4.2/go.mod h1:tLMulIdttU9McNUspp0xgXVQah82FyeX6MwdIuYE2rE=
 github.com/sirupsen/logrus v1.6.0/go.mod h1:7uNnSEd1DgxDLC74fIahvMZmmYsHGZGEOFrfsX/uA88=
