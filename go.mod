@@ -9,8 +9,9 @@ replace (
 )
 
 require (
-	github.com/datachainlab/ethereum-ibc-relay-chain v0.3.2
-	github.com/hyperledger-labs/yui-relayer v0.5.3
+	github.com/datachainlab/ethereum-ibc-relay-chain v0.3.5
+	github.com/datachainlab/ibc-hd-signer v0.1.0
+	github.com/hyperledger-labs/yui-relayer v0.5.4
 )
 
 require (
