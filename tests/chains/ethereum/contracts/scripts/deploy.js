@@ -68,6 +68,9 @@ async function main() {
   const ics20transferbank = await deploy(deployer, "ICS20TransferBank", [ibcHandler.target, ics20bank.target]);
   saveAddress("ICS20TransferBank", ics20transferbank);
 
+  const mockApp = await deploy(deployer, "TestIBCChannelUpgradableMockApp", [ibcHandler.target]);
+  saveAddress("TestIBCChannelUpgradableMockApp", mockApp);
+
   const mockClient = await deploy(deployer, "MockClient", [ibcHandler.target]);
   saveAddress("MockClient", mockClient);
 
@@ -75,6 +78,7 @@ async function main() {
   saveAddress("Multicall3", multicall3);
 
   await ibcHandler.bindPort("transfer", ics20transferbank.target);
+  await ibcHandler.bindPort("mockapp", mockApp.target);
   await ibcHandler.registerClient("mock-client", mockClient.target);
   await ics20bank.setOperator(ics20transferbank.target);
 

@@ -3,6 +3,11 @@ module github.com/datachainlab/yui-relayer-build
 go 1.21
 
 replace (
+	github.com/datachainlab/ethereum-ibc-relay-chain => github.com/siburu/ethereum-ibc-relay-chain v0.0.0-20240813143250-32bed5d08e0d
+	github.com/hyperledger-labs/yui-relayer => github.com/siburu/yui-relayer v0.0.0-20240819062652-e5332a150a51
+)
+
+replace (
 	// https://github.com/cosmos/cosmos-sdk/blob/v0.47.3/go.mod#L171-L182
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7

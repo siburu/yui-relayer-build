@@ -17,14 +17,16 @@ test-multi:
 	./scripts/fixture multi
 	./scripts/init-rly
 	./scripts/handshake
-	./scripts/test-tx
+	./scripts/test-channel-upgrade
+#	./scripts/test-tx
 
 .PHONY: test-single
 test-single:
 	./scripts/fixture single
 	./scripts/init-rly
 	./scripts/handshake
-	./scripts/test-tx
+	./scripts/test-channel-upgrade
+#	./scripts/test-tx
 
 .PHONY: network-down
 network-down:

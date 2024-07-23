@@ -16,10 +16,12 @@ import {
 
 import {IIBCHandler} from "@hyperledger-labs/yui-ibc-solidity/contracts/core/25-handler/IIBCHandler.sol";
 import {OwnableIBCHandler} from "@hyperledger-labs/yui-ibc-solidity/contracts/core/25-handler/OwnableIBCHandler.sol";
-import {MockClient} from "@hyperledger-labs/yui-ibc-solidity/contracts/clients/MockClient.sol";
+import {MockClient} from "@hyperledger-labs/yui-ibc-solidity/contracts/clients/mock/MockClient.sol";
 
 import {ERC20Token} from "@hyperledger-labs/yui-ibc-solidity/contracts/apps/20-transfer/ERC20Token.sol";
 import {ICS20Bank} from "@hyperledger-labs/yui-ibc-solidity/contracts/apps/20-transfer/ICS20Bank.sol";
 import {ICS20TransferBank} from "@hyperledger-labs/yui-ibc-solidity/contracts/apps/20-transfer/ICS20TransferBank.sol";
 
 import {Multicall3} from "./Multicall3.sol";
+
+import {TestIBCChannelUpgradableMockApp} from "@hyperledger-labs/yui-ibc-solidity/tests/foundry/src/helpers/TestIBCChannelUpgradableMockApp.t.sol";
