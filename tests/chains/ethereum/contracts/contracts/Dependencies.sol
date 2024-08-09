@@ -11,7 +11,7 @@ import {IBCChannelPacketTimeout} from
     "@hyperledger-labs/yui-ibc-solidity/contracts/core/04-channel/IBCChannelPacketTimeout.sol";
 import {
     IBCChannelUpgradeInitTryAck,
-    IBCChannelUpgradeConfirmTimeoutCancel
+    IBCChannelUpgradeConfirmOpenTimeoutCancel
 } from "@hyperledger-labs/yui-ibc-solidity/contracts/core/04-channel/IBCChannelUpgrade.sol";
 
 import {IIBCHandler} from "@hyperledger-labs/yui-ibc-solidity/contracts/core/25-handler/IIBCHandler.sol";
@@ -22,6 +22,6 @@ import {ERC20Token} from "@hyperledger-labs/yui-ibc-solidity/contracts/apps/20-t
 import {ICS20Bank} from "@hyperledger-labs/yui-ibc-solidity/contracts/apps/20-transfer/ICS20Bank.sol";
 import {ICS20TransferBank} from "@hyperledger-labs/yui-ibc-solidity/contracts/apps/20-transfer/ICS20TransferBank.sol";
 
-import {Multicall3} from "./Multicall3.sol";
+import {IBCChannelUpgradableMockApp} from "@hyperledger-labs/yui-ibc-solidity/contracts/apps/mock/IBCChannelUpgradableMockApp.sol";
 
-import {TestIBCChannelUpgradableMockApp} from "@hyperledger-labs/yui-ibc-solidity/tests/foundry/src/helpers/TestIBCChannelUpgradableMockApp.t.sol";
+import {Multicall3} from "./Multicall3.sol";

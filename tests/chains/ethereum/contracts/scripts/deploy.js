@@ -28,7 +28,7 @@ async function deployIBC(deployer) {
     "IBCChannelPacketSendRecv",
     "IBCChannelPacketTimeout",
     "IBCChannelUpgradeInitTryAck",
-    "IBCChannelUpgradeConfirmTimeoutCancel",
+    "IBCChannelUpgradeConfirmOpenTimeoutCancel",
   ];
   const logics = [];
   for (const name of logicNames) {
@@ -68,8 +68,8 @@ async function main() {
   const ics20transferbank = await deploy(deployer, "ICS20TransferBank", [ibcHandler.target, ics20bank.target]);
   saveAddress("ICS20TransferBank", ics20transferbank);
 
-  const mockApp = await deploy(deployer, "TestIBCChannelUpgradableMockApp", [ibcHandler.target]);
-  saveAddress("TestIBCChannelUpgradableMockApp", mockApp);
+  const mockApp = await deploy(deployer, "IBCChannelUpgradableMockApp", [ibcHandler.target]);
+  saveAddress("IBCChannelUpgradableMockApp", mockApp);
 
   const mockClient = await deploy(deployer, "MockClient", [ibcHandler.target]);
   saveAddress("MockClient", mockClient);

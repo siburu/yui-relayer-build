@@ -25,8 +25,8 @@ dstConnectionId=$($RLY paths list --json | jq --raw-output --arg path_name "$PAT
 mv $origconfig "$RELAYER_CONF/config/config.json"
 
 # constant variables
-APP_ADDRESS_A=`cat ${FIXTURES_DIR}/ethereum/ibc0/addresses/TestIBCChannelUpgradableMockApp`
-APP_ADDRESS_B=`cat ${FIXTURES_DIR}/ethereum/ibc1/addresses/TestIBCChannelUpgradableMockApp`
+APP_ADDRESS_A=`cat ${FIXTURES_DIR}/ethereum/ibc0/addresses/IBCChannelUpgradableMockApp`
+APP_ADDRESS_B=`cat ${FIXTURES_DIR}/ethereum/ibc1/addresses/IBCChannelUpgradableMockApp`
 #TIMEOUT_FLAGS="--timeout-height 0-100000000 --timeout-timestamp `date -d 2030/01/01 +%s`"
 TIMEOUT_FLAGS="--timeout-height 0-100000000"
 
