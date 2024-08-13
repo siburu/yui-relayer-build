@@ -53,7 +53,9 @@ show_balance Before ${RPC_ADDRESS} ${ICS20_BANK_ADDRESS} ${ETH_ADDRESS} ${ETH_DE
 
 echo "!!! ibc0 -> ibc1 !!!"
 
-${RLY} tx transfer ibc01 ibc0 ibc1 100samoleans ${ETH_ADDRESS}
+TM_USER_ADDRESS=$(${RLY} tendermint keys show ibc0 testkey)
+docker exec -it tendermint-chain0-mock sh -c "simd --home /root/data/ibc0 tx --keyring-backend=test --from ${TM_USER_ADDRESS} --chain-id ibc0 mockapp send mockapp channel-0 'mock packet data' --yes"
+#${RLY} tx transfer ibc01 ibc0 ibc1 100samoleans ${ETH_ADDRESS}
 sleep ${TX_INTERVAL}
 ${RLY} tx relay ibc01 --src-seqs 1
 sleep ${TX_INTERVAL}
