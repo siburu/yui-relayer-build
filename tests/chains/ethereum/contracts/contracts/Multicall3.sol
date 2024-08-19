@@ -47,7 +47,12 @@ contract Multicall3 {
             bool success;
             call = calls[i];
             (success, returnData[i]) = call.target.call(call.callData);
-            require(success, "Multicall3: call failed");
+            if (!success) {
+                bytes memory result = returnData[i];
+                assembly {
+                    revert(add(result, 0x20), mload(result))
+                }
+            }
             unchecked { ++i; }
         }
     }
