@@ -25,8 +25,8 @@ $RLY paths edit $PATH_NAME dst connection-id ''
 
 # create a new connection and save the new connection identifiers
 $RLY tx connection $PATH_NAME
-srcConnectionId=$($RLY paths list --json | jq --raw-output --arg path_name "$PATH_NAME" '.[$path_name].src."connection-id"')
-dstConnectionId=$($RLY paths list --json | jq --raw-output --arg path_name "$PATH_NAME" '.[$path_name].dst."connection-id"')
+srcAltConnectionId=$($RLY paths list --json | jq --raw-output --arg path_name "$PATH_NAME" '.[$path_name].src."connection-id"')
+dstAltConnectionId=$($RLY paths list --json | jq --raw-output --arg path_name "$PATH_NAME" '.[$path_name].dst."connection-id"')
 
 # resume the original config.json
 mv $origconfig "$RELAYER_CONF/config/config.json"
@@ -37,29 +37,29 @@ APP_ADDRESS=`cat ${FIXTURES_DIR}/ethereum/ibc1/addresses/IBCChannelUpgradableMoc
 TIMEOUT_FLAGS="--timeout-height 0-100000000"
 
 # test channel upgrade (crossing-hello)
-UPGRADE_FIELDS_FLAGS_A="--ordering ORDER_ORDERED --connection-hops $srcConnectionId --version mockapp-2"
-UPGRADE_FIELDS_FLAGS_B="--ordering ORDER_ORDERED --connection-hops $dstConnectionId --version mockapp-2"
+UPGRADE_FIELDS_FLAGS_A="--ordering UnOrdered --connection-hops $srcAltConnectionId --version mockapp-999"
+UPGRADE_FIELDS_FLAGS_B="--ordering UnOrdered --connection-hops $dstAltConnectionId --version mockapp-999"
 $RLY tx channel-upgrade init ibc01 ibc0 $UPGRADE_FIELDS_FLAGS_A
 $RLY eth upgrade propose ibc01 ibc1 --app-address $APP_ADDRESS $UPGRADE_FIELDS_FLAGS_B $TIMEOUT_FLAGS
 $RLY tx channel-upgrade init ibc01 ibc1 $UPGRADE_FIELDS_FLAGS_B
-$RLY tx channel-upgrade execute ibc01 --until-flushing
+$RLY tx channel-upgrade execute ibc01 --target-src-state FLUSHCOMPLETE --target-dst-state FLUSHING
 $RLY eth upgrade allow ibc01 ibc1 --app-address $APP_ADDRESS --upgrade-sequence 1
 $RLY tx channel-upgrade execute ibc01
 
 # test channel upgrade (non-crossing-hello)
-UPGRADE_FIELDS_FLAGS_A="--ordering ORDER_UNORDERED --connection-hops $srcOrigConnectionId --version mockapp-3"
-UPGRADE_FIELDS_FLAGS_B="--ordering ORDER_UNORDERED --connection-hops $dstOrigConnectionId --version mockapp-3"
+UPGRADE_FIELDS_FLAGS_A="--ordering Unordered --connection-hops $srcOrigConnectionId --version mockapp-1"
+UPGRADE_FIELDS_FLAGS_B="--ordering Unordered --connection-hops $dstOrigConnectionId --version mockapp-1"
 $RLY tx channel-upgrade init ibc01 ibc0 $UPGRADE_FIELDS_FLAGS_A
 $RLY tx channel-upgrade init ibc01 ibc0 $UPGRADE_FIELDS_FLAGS_A
 $RLY eth upgrade propose ibc01 ibc1 --app-address $APP_ADDRESS $UPGRADE_FIELDS_FLAGS_B $TIMEOUT_FLAGS
 $RLY tx channel-upgrade init ibc01 ibc1 $UPGRADE_FIELDS_FLAGS_B
-$RLY tx channel-upgrade execute ibc01 --until-flushing
+$RLY tx channel-upgrade execute ibc01 --target-src-state FLUSHCOMPLETE --target-dst-state FLUSHING
 $RLY eth upgrade allow ibc01 ibc1 --app-address $APP_ADDRESS --upgrade-sequence 3
 $RLY tx channel-upgrade execute ibc01
 
 # test channel upgrade cancel
-UPGRADE_FIELDS_FLAGS_A="--ordering ORDER_ORDERED --connection-hops $srcConnectionId --version mockapp-4"
-UPGRADE_FIELDS_FLAGS_B="--ordering ORDER_ORDERED --connection-hops $dstConnectionId --version mockapp-4"
+UPGRADE_FIELDS_FLAGS_A="--ordering UnOrdered --connection-hops $srcAltConnectionId --version mockapp-999"
+UPGRADE_FIELDS_FLAGS_B="--ordering UnOrdered --connection-hops $dstAltConnectionId --version mockapp-999"
 $RLY tx channel-upgrade init ibc01 ibc0 $UPGRADE_FIELDS_FLAGS_A
 $RLY eth upgrade propose ibc01 ibc1 --app-address $APP_ADDRESS $UPGRADE_FIELDS_FLAGS_B $TIMEOUT_FLAGS
 $RLY tx channel-upgrade init ibc01 ibc1 $UPGRADE_FIELDS_FLAGS_B
