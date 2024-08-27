@@ -94,8 +94,6 @@ $RLY tx channel-upgrade init ibc01 ibc0 $origSrcOpts
 $RLY tx channel-upgrade init ibc01 ibc0 $origSrcOpts
 $RLY eth upgrade propose ibc01 ibc1 $origDstOpts $TIMEOUT_FLAGS
 $RLY tx channel-upgrade init ibc01 ibc1 $origDstOpts
-$RLY tx channel-upgrade execute ibc01 --target-src-state FLUSHCOMPLETE --target-dst-state FLUSHING
-$RLY eth upgrade allow ibc01 ibc1 --upgrade-sequence 3
 $RLY tx channel-upgrade execute ibc01
 checkResult orig
 
@@ -141,8 +139,6 @@ $RLY tx channel-upgrade execute ibc01 --target-src-state FLUSHCOMPLETE --target-
 $RLY tx channel-upgrade cancel ibc01 ibc1                     # ibc1 returns to UNINIT. ibc0 is FLUSHCOMPLETE.
 $RLY eth upgrade propose ibc01 ibc1 $origDstOpts $TIMEOUT_FLAGS
 $RLY tx channel-upgrade init ibc01 ibc1 --unsafe $origDstOpts # ibc1 re-initiates new upgrade.
-$RLY tx channel-upgrade execute ibc01 --target-src-state FLUSHCOMPLETE --target-dst-state FLUSHING
-$RLY eth upgrade allow ibc01 ibc1 --upgrade-sequence 10
 $RLY tx channel-upgrade execute ibc01                         # The upgrade initiated by ibc1 should be completed after ibc0's one is cancelled.
 checkResult orig
 
