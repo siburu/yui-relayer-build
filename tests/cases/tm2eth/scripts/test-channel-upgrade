@@ -68,10 +68,26 @@ checkResult() {
 	echo "expectedSide is invalid value: $expectedSide"
 	exit 1
     fi
+
+    # confirm src chain is not upgrading
+    upg=$($RLY query channel-upgrade ibc01 ibc0)
+    if [ $(echo "$upg" | jq '.fields|length') -ne 0 ]
+    then
+	echo "src chain still in the process of upgrade: $upg"
+	exit 1
+    fi
+
+    # confirm dst chain is not upgrading
+    upg=$($RLY query channel-upgrade ibc01 ibc1)
+    if [ $(echo "$upg" | jq '.fields|length') -ne 0 ]
+    then
+	echo "dst chain is still in the process of upgrade: $upg"
+	exit 1
+    fi
 }
 
 # constant variables
-#TIMEOUT_FLAGS="--timeout-height 0-100000000 --timeout-timestamp `date -d 2030/01/01 +%s`"
+#TIMEOUT_FLAGS="--timeout-height 0-0 --timeout-timestamp `date -d 2030/01/01 +%s`"
 TIMEOUT_FLAGS="--timeout-height 0-100000000"
 
 # upgrade fields
