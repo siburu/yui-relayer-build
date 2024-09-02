@@ -81,7 +81,7 @@ async function deployApp(deployer, ibcHandler) {
   const proxyV1 = await deployProxy(deployer, "AppV1", [ibcHandler.target], unsafeAllow, "__AppV1_init(string)", ["mockapp-1"]);
   saveAddress("AppV1", proxyV1);
 
-  for (let i = 2; i <= 7; i++) {
+  for (let i = 2; i <= 10; i++) {
     const contractName = `AppV${i}`;
     const impl = await prepareImplementation(deployer, proxyV1, contractName, [ibcHandler.target], unsafeAllow);
     saveAddress(contractName, impl);
