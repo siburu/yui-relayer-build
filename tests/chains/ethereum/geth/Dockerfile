@@ -1,4 +1,4 @@
-FROM ethereum/client-go:v1.13.14
+FROM ethereum/client-go:v1.14.8
 
 ARG CHAIN_ID
 
@@ -7,9 +7,9 @@ ADD genesis-${CHAIN_ID}.json  /root/genesis.json
 ADD privatekey  /root/privatekey
 ADD run.sh  /run.sh
 
-RUN /usr/local/bin/geth --nousb --datadir /root/.ethereum init /root/genesis.json
+RUN /usr/local/bin/geth --datadir /root/.ethereum --state.scheme hash init /root/genesis.json
 
-RUN /usr/local/bin/geth --nousb account import --password /root/geth.password /root/privatekey
+RUN /usr/local/bin/geth account import --password /root/geth.password /root/privatekey
 
 EXPOSE 8545
 
