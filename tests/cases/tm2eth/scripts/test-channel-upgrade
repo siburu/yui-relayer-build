@@ -181,18 +181,19 @@ checkResult orig mockapp-5
 
 echo '##### case 8 #####'
 fields="$ALT_FIELDS --version mockapp-6"
+$RLY tx channel-upgrade init ibc01 ibc0 $fields
+$RLY eth upgrade propose ibc01 ibc1 $fields $TIMEOUT_FLAGS
+$RLY tx channel-upgrade init ibc01 ibc1 $fields
+retry 10 $RLY tx channel-upgrade execute ibc01 --target-src-state FLUSHCOMPLETE --target-dst-state FLUSHING
+sleep 30                                       # ibc1 exceeds upgrade.timeout.timestamp
+retry 10 $RLY tx channel-upgrade execute ibc01 # ibc0 <= chanUpgradeTimeout, ibc1 <= chanUpgradeCancel
+checkResult orig mockapp-5
+
+echo '##### case 9 #####'
+$RLY tx channel-upgrade init ibc01 ibc0 $fields
 $RLY eth upgrade propose ibc01 ibc1 $fields --timeout-height 0-0 --timeout-timestamp `date -d 30sec +%s%N`
 $RLY tx channel-upgrade init ibc01 ibc1 $fields
 retry 10 $RLY tx channel-upgrade execute ibc01 --target-src-state FLUSHING --target-dst-state FLUSHING
-sleep 30                                       # ibc0 exceeds upgrade.timeout.timestamp
-retry 10 $RLY tx channel-upgrade execute ibc01 # ibc1 <= chanUpgradeTimeout, ibc0 <= chanUpgradeCancel
+sleep 30                                       # Both chains exceed upgrade.timeout.timestamp
+retry 10 $RLY tx channel-upgrade execute ibc01 # ibc0,ibc1 <= chanUpgradeTimeout
 checkResult orig mockapp-5
-
-# echo '##### case 9 #####'
-# $RLY tx channel-upgrade init ibc01 ibc0 $altSrcOpts
-# $RLY eth upgrade propose ibc01 ibc1 $altDstOpts $TIMEOUT_FLAGS
-# $RLY tx channel-upgrade init ibc01 ibc1 $altDstOpts
-# retry 10 $RLY tx channel-upgrade execute ibc01 --target-src-state FLUSHING --target-dst-state FLUSHING
-# sleep 20                              # Both chains exceed upgrade.timeout.timestamp
-# retry 10 $RLY tx channel-upgrade execute ibc01 # ibc0,ibc1 <= chanUpgradeTimeout
-# checkResult orig
