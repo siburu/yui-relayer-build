@@ -2,65 +2,48 @@
 
 set -eux
 
-SCRIPT_DIR=$(cd $(dirname $0); pwd)
+SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE:-$0}); pwd)
+FIXTURES_DIR=${SCRIPT_DIR}/../fixtures
 
 RELAYER_CONF="$HOME/.yui-relayer"
 RLY_BINARY=${SCRIPT_DIR}/../../../../build/yrly
 RLY="${RLY_BINARY} --debug"
-FIXTURES_DIR=${SCRIPT_DIR}/../fixtures
 
-# ics20-cli
-ICS20_CLI="ethereum-ics20-cli"
-if ! which ${ICS20_CLI} > /dev/null 2>&1; then
-  TMP_DIR=`mktemp -d`
-  git clone https://github.com/datachainlab/ethereum-ics20-cli.git ${TMP_DIR}/ethereum-ics20-cli
-  pushd ${TMP_DIR}/ethereum-ics20-cli
-  git checkout v0.0.4
-  go install
-  export PATH=$PATH:$(go env GOPATH)/bin
-  popd
-fi
+ADDRESSES_DIR_B="${FIXTURES_DIR}/ethereum/ibc1/addresses"
+MOCKAPP_B=`cat ${ADDRESSES_DIR_B}/AppV1`
+
+CONFIG_JSON=${RELAYER_CONF}/config/config.json
+
+MNEMONIC_B=$(jq -r '.chains[] | select(.chain.chain_id == "ibc1").chain.signer.mnemonic' ${CONFIG_JSON})
+RPC_ADDRESS_B=$(jq -r '.chains[] | select(.chain.chain_id == "ibc1").chain.rpc_addr' ${CONFIG_JSON})
+PORT_B=$(jq -r '.paths.ibc01.dst."port-id"' ${CONFIG_JSON})
+CHANNEL_B=$(jq -r '.paths.ibc01.dst."channel-id"' ${CONFIG_JSON})
 
 TX_INTERVAL=3
 
-TM_ADDRESS=$(${RLY} tendermint keys show ibc0 testkey)
-
-ICS20_BANK_ADDRESS=`cat ${FIXTURES_DIR}/ethereum/ibc1/addresses/ICS20Bank`
-
-CONFIG_JSON=${RELAYER_CONF}/config/config.json
-PORT_ID=$(jq -r '.paths.ibc01.dst."port-id"' ${CONFIG_JSON})
-CHANNEL_ID=$(jq -r '.paths.ibc01.dst."channel-id"' ${CONFIG_JSON})
-RPC_ADDRESS=$(jq -r '.chains[] | select(.chain.chain_id == "ibc1").chain.rpc_addr' ${CONFIG_JSON})
-MNEMONIC=$(jq -r '.chains[] | select(.chain.chain_id == "ibc1").chain.signer.mnemonic' ${CONFIG_JSON})
-ETH_ADDRESS=$(${ICS20_CLI} wallet address --mnemonic="${MNEMONIC}" --wallet-index=2)
-
-DENOM="samoleans"
-ETH_DENOM="${PORT_ID}/${CHANNEL_ID}/${DENOM}"
-
-# ethereum balance
-show_balance() {
-  state=$1
-  chain=$2
-  bank=$3
-  user_wallet=$4
-  denom=$5
-  balance=$(${ICS20_CLI} ics20 balance --rpc-address=${chain} --ics20-bank-address=${bank} --wallet-address=${user_wallet} --denom=${denom})
-  echo "${state} ${chain} balance $balance"
-}
-
-echo "Before ibc0 balance: $(${RLY} query balance ibc0 ${TM_ADDRESS})"
-show_balance Before ${RPC_ADDRESS} ${ICS20_BANK_ADDRESS} ${ETH_ADDRESS} ${ETH_DENOM}
-
 echo "!!! ibc0 -> ibc1 !!!"
-
-TM_USER_ADDRESS=$(${RLY} tendermint keys show ibc0 testkey)
-docker exec tendermint-chain0-mock sh -c "simd --home /root/data/ibc0 tx --keyring-backend=test --from ${TM_USER_ADDRESS} --chain-id ibc0 mockapp send mockapp channel-0 'mock packet data' --yes"
-#${RLY} tx transfer ibc01 ibc0 ibc1 100samoleans ${ETH_ADDRESS}
+TM_ADDRESS=$(${RLY} tendermint keys show ibc0 testkey)
+docker exec tendermint-chain0-mock sh -c "simd --home /root/data/ibc0 tx --keyring-backend=test --from ${TM_ADDRESS} --chain-id ibc0 mockapp send mockapp channel-0 'mock packet data' --yes"
 sleep ${TX_INTERVAL}
 ${RLY} tx relay ibc01 --src-seqs 1
 sleep ${TX_INTERVAL}
 ${RLY} tx acks ibc01 --dst-seqs 1
 sleep ${TX_INTERVAL}
 
-echo "After ibc0 balance: $(${RLY} query balance ibc0 ${TM_ADDRESS})"
-show_balance After ${RPC_ADDRESS} ${ICS20_BANK_ADDRESS} ${ETH_ADDRESS} ${ETH_DENOM}
+echo "!!! ibc1 -> ibc0 !!!"
+BOB_INDEX=2
+cast send \
+     --rpc-url $RPC_ADDRESS_B \
+     --mnemonic "$MNEMONIC_B" \
+     --mnemonic-index ${BOB_INDEX} \
+     $MOCKAPP_B \
+     'sendPacket(bytes,string,string,(uint64,uint64),uint64)' \
+     $(cast from-utf8 'mock packet data') \
+     $PORT_B \
+     $CHANNEL_B \
+     '(0,100000)' \
+     $(date -d 1hour +%s%N)
+sleep ${TX_INTERVAL}
+${RLY} tx relay ibc01 --dst-seqs 1
+sleep ${TX_INTERVAL}
+${RLY} tx acks ibc01 --src-seqs 1
