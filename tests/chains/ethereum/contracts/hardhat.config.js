@@ -1,4 +1,5 @@
 require("@nomicfoundation/hardhat-toolbox");
+require("@openzeppelin/hardhat-upgrades");
 
 const mnemonic =
   "math razor capable expose worth grape metal sunset metal sudden usage scheme";

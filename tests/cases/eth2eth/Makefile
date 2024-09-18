@@ -17,6 +17,7 @@ test-multi:
 	./scripts/fixture multi
 	./scripts/init-rly
 	./scripts/handshake
+	./scripts/test-channel-upgrade multi
 	./scripts/test-tx
 
 .PHONY: test-single
@@ -24,6 +25,7 @@ test-single:
 	./scripts/fixture single
 	./scripts/init-rly
 	./scripts/handshake
+	./scripts/test-channel-upgrade single
 	./scripts/test-tx
 
 .PHONY: network-down
