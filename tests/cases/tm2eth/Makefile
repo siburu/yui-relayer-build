@@ -13,7 +13,8 @@ test:
 	./scripts/init-rly
 	./scripts/handshake
 	./scripts/test-channel-upgrade
-	./scripts/test-tx
+	./scripts/test-mockapp-packet-relay
+	./scripts/test-ics20-packet-relay
 
 .PHONY: network-down
 network-down:

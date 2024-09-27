@@ -9,15 +9,15 @@ RELAYER_CONF="$HOME/.yui-relayer"
 RLY_BINARY=${SCRIPT_DIR}/../../../../build/yrly
 RLY="${RLY_BINARY} --debug"
 
+PATH_NAME=mockapp-path
+
 ADDRESSES_DIR_B="${FIXTURES_DIR}/ethereum/ibc1/addresses"
-MOCKAPP_B=`cat ${ADDRESSES_DIR_B}/AppV1`
+MOCKAPP_CONTRACT_B=`cat ${ADDRESSES_DIR_B}/AppV1`
 
-CONFIG_JSON=${RELAYER_CONF}/config/config.json
-
-MNEMONIC_B=$(jq -r '.chains[] | select(.chain.chain_id == "ibc1").chain.signer.mnemonic' ${CONFIG_JSON})
-RPC_ADDRESS_B=$(jq -r '.chains[] | select(.chain.chain_id == "ibc1").chain.rpc_addr' ${CONFIG_JSON})
-PORT_B=$(jq -r '.paths.ibc01.dst."port-id"' ${CONFIG_JSON})
-CHANNEL_B=$(jq -r '.paths.ibc01.dst."channel-id"' ${CONFIG_JSON})
+MNEMONIC_B=$($RLY config show | jq -r '.chains[] | select(.chain.chain_id == "ibc1").chain.signer.mnemonic')
+RPC_ADDRESS_B=$($RLY config show | jq -r '.chains[] | select(.chain.chain_id == "ibc1").chain.rpc_addr')
+PORT_B=$($RLY paths list --json | jq -r --arg path $PATH_NAME '.[$path].dst."port-id"')
+CHANNEL_B=$($RLY paths list --json | jq -r --arg path $PATH_NAME '.[$path].dst."channel-id"')
 
 TX_INTERVAL=3
 
@@ -25,9 +25,9 @@ echo "!!! ibc0 -> ibc1 !!!"
 TM_ADDRESS=$(${RLY} tendermint keys show ibc0 testkey)
 docker exec tendermint-chain0-mock sh -c "simd --home /root/data/ibc0 tx --keyring-backend=test --from ${TM_ADDRESS} --chain-id ibc0 mockapp send mockapp channel-0 'mock packet data' --yes"
 sleep ${TX_INTERVAL}
-${RLY} tx relay ibc01 --src-seqs 1
+${RLY} tx relay $PATH_NAME --src-seqs 1
 sleep ${TX_INTERVAL}
-${RLY} tx acks ibc01 --dst-seqs 1
+${RLY} tx acks $PATH_NAME --dst-seqs 1
 sleep ${TX_INTERVAL}
 
 echo "!!! ibc1 -> ibc0 !!!"
@@ -36,7 +36,7 @@ cast send \
      --rpc-url $RPC_ADDRESS_B \
      --mnemonic "$MNEMONIC_B" \
      --mnemonic-index ${BOB_INDEX} \
-     $MOCKAPP_B \
+     $MOCKAPP_CONTRACT_B \
      'sendPacket(bytes,string,string,(uint64,uint64),uint64)' \
      $(cast from-utf8 'mock packet data') \
      $PORT_B \
@@ -44,6 +44,6 @@ cast send \
      '(0,100000)' \
      $(date -d 1hour +%s%N)
 sleep ${TX_INTERVAL}
-${RLY} tx relay ibc01 --dst-seqs 1
+${RLY} tx relay $PATH_NAME --dst-seqs 1
 sleep ${TX_INTERVAL}
-${RLY} tx acks ibc01 --src-seqs 1
+${RLY} tx acks $PATH_NAME --src-seqs 1

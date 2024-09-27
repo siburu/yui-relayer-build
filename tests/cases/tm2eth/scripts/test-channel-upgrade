@@ -11,7 +11,7 @@ RELAYER_CONF="$HOME/.yui-relayer"
 RLY_BINARY=${SCRIPT_DIR}/../../../../build/yrly
 RLY="${RLY_BINARY} --debug"
 
-PATH_NAME=ibc01
+PATH_NAME=mockapp-path
 
 checkEq() {
     typ=$1
@@ -91,7 +91,7 @@ checkResult() {
     fi
 
     # confirm src chain is not upgrading
-    upg=$($RLY query channel-upgrade ibc01 ibc0)
+    upg=$($RLY query channel-upgrade $PATH_NAME ibc0)
     if [ $(echo "$upg" | jq '.fields|length') -ne 0 ]
     then
 	echo "src chain still in the process of upgrade: $upg"
@@ -99,7 +99,7 @@ checkResult() {
     fi
 
     # confirm dst chain is not upgrading
-    upg=$($RLY query channel-upgrade ibc01 ibc1)
+    upg=$($RLY query channel-upgrade $PATH_NAME ibc1)
     if [ $(echo "$upg" | jq '.fields|length') -ne 0 ]
     then
 	echo "dst chain is still in the process of upgrade: $upg"
@@ -115,85 +115,85 @@ ALT_FIELDS="--ordering $altOrder --connection-hops $altConnectionId"
 
 echo '##### case 1 #####'
 fields="$ALT_FIELDS --version mockapp-2"
-$RLY tx channel-upgrade init ibc01 ibc0 $fields
-$RLY eth upgrade propose ibc01 ibc1 $fields $TIMEOUT_FLAGS
-$RLY tx channel-upgrade init ibc01 ibc1 $fields
-retry 10 $RLY tx channel-upgrade execute ibc01 --target-src-state FLUSHCOMPLETE --target-dst-state FLUSHING
-$RLY eth upgrade allow ibc01 ibc1 --upgrade-sequence 1
-retry 10 $RLY tx channel-upgrade execute ibc01
+$RLY tx channel-upgrade init $PATH_NAME ibc0 $fields
+$RLY eth upgrade propose $PATH_NAME ibc1 $fields $TIMEOUT_FLAGS
+$RLY tx channel-upgrade init $PATH_NAME ibc1 $fields
+retry 10 $RLY tx channel-upgrade execute $PATH_NAME --target-src-state FLUSHCOMPLETE --target-dst-state FLUSHING
+$RLY eth upgrade allow $PATH_NAME ibc1 --upgrade-sequence 1
+retry 10 $RLY tx channel-upgrade execute $PATH_NAME
 checkResult alt mockapp-2
 
 echo '##### case 2 #####'
 fields="$ORIG_FIELDS --version mockapp-3"
-$RLY tx channel-upgrade init ibc01 ibc0 $fields
-$RLY tx channel-upgrade init ibc01 ibc0 $fields
-$RLY eth upgrade propose ibc01 ibc1 $fields $TIMEOUT_FLAGS
-$RLY tx channel-upgrade init ibc01 ibc1 $fields
-retry 10 $RLY tx channel-upgrade execute ibc01
+$RLY tx channel-upgrade init $PATH_NAME ibc0 $fields
+$RLY tx channel-upgrade init $PATH_NAME ibc0 $fields
+$RLY eth upgrade propose $PATH_NAME ibc1 $fields $TIMEOUT_FLAGS
+$RLY tx channel-upgrade init $PATH_NAME ibc1 $fields
+retry 10 $RLY tx channel-upgrade execute $PATH_NAME
 checkResult orig mockapp-3
 
 echo '##### case 3 #####'
 fields="$ALT_FIELDS --version mockapp-4"
-$RLY tx channel-upgrade init ibc01 ibc0 $fields
-$RLY eth upgrade propose ibc01 ibc1 $fields $TIMEOUT_FLAGS
-$RLY tx channel-upgrade init ibc01 ibc1 $fields
-$RLY tx channel-upgrade cancel ibc01 ibc0      # create situation where ibc0.error_receipt.sequence >= ibc1.channel.upgrade_sequence
-retry 10 $RLY tx channel-upgrade execute ibc01 # the channel upgrade of ibc1 should be cancelled
+$RLY tx channel-upgrade init $PATH_NAME ibc0 $fields
+$RLY eth upgrade propose $PATH_NAME ibc1 $fields $TIMEOUT_FLAGS
+$RLY tx channel-upgrade init $PATH_NAME ibc1 $fields
+$RLY tx channel-upgrade cancel $PATH_NAME ibc0      # create situation where ibc0.error_receipt.sequence >= ibc1.channel.upgrade_sequence
+retry 10 $RLY tx channel-upgrade execute $PATH_NAME # the channel upgrade of ibc1 should be cancelled
 checkResult orig mockapp-3
 
 echo '##### case 4 #####'
-$RLY tx channel-upgrade init ibc01 ibc0 $fields
-$RLY eth upgrade propose ibc01 ibc1 $fields $TIMEOUT_FLAGS
-retry 10 $RLY tx channel-upgrade execute ibc01 --target-src-state INIT --target-dst-state FLUSHING
-$RLY tx channel-upgrade cancel ibc01 ibc0      # ibc0 returns to UNINIT. ibc1 is FLUSHING.
-retry 10 $RLY tx channel-upgrade execute ibc01 # ibc1's upgrade should be cancelled
+$RLY tx channel-upgrade init $PATH_NAME ibc0 $fields
+$RLY eth upgrade propose $PATH_NAME ibc1 $fields $TIMEOUT_FLAGS
+retry 10 $RLY tx channel-upgrade execute $PATH_NAME --target-src-state INIT --target-dst-state FLUSHING
+$RLY tx channel-upgrade cancel $PATH_NAME ibc0      # ibc0 returns to UNINIT. ibc1 is FLUSHING.
+retry 10 $RLY tx channel-upgrade execute $PATH_NAME # ibc1's upgrade should be cancelled
 checkResult orig mockapp-3
 
 echo '##### case 5 #####'
-$RLY tx channel-upgrade init ibc01 ibc0 $fields
-$RLY eth upgrade propose ibc01 ibc1 $fields $TIMEOUT_FLAGS
-retry 10 $RLY tx channel-upgrade execute ibc01 --target-src-state INIT --target-dst-state FLUSHING
-$RLY tx channel-upgrade cancel ibc01 ibc0                # ibc0 returns to UNINIT. ibc1 is FLUSHING.
-$RLY tx channel-upgrade init ibc01 ibc0 --unsafe $fields # ibc0 re-initiates new upgrade.
-retry 10 $RLY tx channel-upgrade execute ibc01 --target-src-state FLUSHCOMPLETE --target-dst-state FLUSHING
-$RLY eth upgrade allow ibc01 ibc1 --upgrade-sequence 7
-retry 10 $RLY tx channel-upgrade execute ibc01           # The upgrade initiated by ibc0 should be completed after ibc1's one is cancelled.
+$RLY tx channel-upgrade init $PATH_NAME ibc0 $fields
+$RLY eth upgrade propose $PATH_NAME ibc1 $fields $TIMEOUT_FLAGS
+retry 10 $RLY tx channel-upgrade execute $PATH_NAME --target-src-state INIT --target-dst-state FLUSHING
+$RLY tx channel-upgrade cancel $PATH_NAME ibc0                # ibc0 returns to UNINIT. ibc1 is FLUSHING.
+$RLY tx channel-upgrade init $PATH_NAME ibc0 --unsafe $fields # ibc0 re-initiates new upgrade.
+retry 10 $RLY tx channel-upgrade execute $PATH_NAME --target-src-state FLUSHCOMPLETE --target-dst-state FLUSHING
+$RLY eth upgrade allow $PATH_NAME ibc1 --upgrade-sequence 7
+retry 10 $RLY tx channel-upgrade execute $PATH_NAME           # The upgrade initiated by ibc0 should be completed after ibc1's one is cancelled.
 checkResult alt mockapp-4
 
 echo '##### case 6 #####'
 fields="$ORIG_FIELDS --version mockapp-5"
-$RLY tx channel-upgrade init ibc01 ibc0 $fields
-$RLY eth upgrade propose ibc01 ibc1 $fields $TIMEOUT_FLAGS
-retry 10 $RLY tx channel-upgrade execute ibc01 --target-src-state FLUSHCOMPLETE --target-dst-state FLUSHING
-$RLY tx channel-upgrade cancel ibc01 ibc1      # ibc1 returns to UNINIT. ibc0 is FLUSHCOMPLETE.
-retry 10 $RLY tx channel-upgrade execute ibc01 # ibc0's upgrade (in FLUSHCOMPLETE) should be cancelled.
+$RLY tx channel-upgrade init $PATH_NAME ibc0 $fields
+$RLY eth upgrade propose $PATH_NAME ibc1 $fields $TIMEOUT_FLAGS
+retry 10 $RLY tx channel-upgrade execute $PATH_NAME --target-src-state FLUSHCOMPLETE --target-dst-state FLUSHING
+$RLY tx channel-upgrade cancel $PATH_NAME ibc1      # ibc1 returns to UNINIT. ibc0 is FLUSHCOMPLETE.
+retry 10 $RLY tx channel-upgrade execute $PATH_NAME # ibc0's upgrade (in FLUSHCOMPLETE) should be cancelled.
 checkResult alt mockapp-4
 
 echo '##### case 7 #####'
-$RLY tx channel-upgrade init ibc01 ibc0 $fields
-$RLY eth upgrade propose ibc01 ibc1 $fields $TIMEOUT_FLAGS
-retry 10 $RLY tx channel-upgrade execute ibc01 --target-src-state FLUSHCOMPLETE --target-dst-state FLUSHING
-$RLY tx channel-upgrade cancel ibc01 ibc1                # ibc1 returns to UNINIT. ibc0 is FLUSHCOMPLETE.
-$RLY eth upgrade propose ibc01 ibc1 $fields $TIMEOUT_FLAGS
-$RLY tx channel-upgrade init ibc01 ibc1 --unsafe $fields # ibc1 re-initiates new upgrade.
-retry 10 $RLY tx channel-upgrade execute ibc01           # The upgrade initiated by ibc1 should be completed after ibc0's one is cancelled.
+$RLY tx channel-upgrade init $PATH_NAME ibc0 $fields
+$RLY eth upgrade propose $PATH_NAME ibc1 $fields $TIMEOUT_FLAGS
+retry 10 $RLY tx channel-upgrade execute $PATH_NAME --target-src-state FLUSHCOMPLETE --target-dst-state FLUSHING
+$RLY tx channel-upgrade cancel $PATH_NAME ibc1                # ibc1 returns to UNINIT. ibc0 is FLUSHCOMPLETE.
+$RLY eth upgrade propose $PATH_NAME ibc1 $fields $TIMEOUT_FLAGS
+$RLY tx channel-upgrade init $PATH_NAME ibc1 --unsafe $fields # ibc1 re-initiates new upgrade.
+retry 10 $RLY tx channel-upgrade execute $PATH_NAME           # The upgrade initiated by ibc1 should be completed after ibc0's one is cancelled.
 checkResult orig mockapp-5
 
 echo '##### case 8 #####'
 fields="$ALT_FIELDS --version mockapp-6"
-$RLY tx channel-upgrade init ibc01 ibc0 $fields
-$RLY eth upgrade propose ibc01 ibc1 $fields $TIMEOUT_FLAGS
-$RLY tx channel-upgrade init ibc01 ibc1 $fields
-retry 10 $RLY tx channel-upgrade execute ibc01 --target-src-state FLUSHCOMPLETE --target-dst-state FLUSHING
+$RLY tx channel-upgrade init $PATH_NAME ibc0 $fields
+$RLY eth upgrade propose $PATH_NAME ibc1 $fields $TIMEOUT_FLAGS
+$RLY tx channel-upgrade init $PATH_NAME ibc1 $fields
+retry 10 $RLY tx channel-upgrade execute $PATH_NAME --target-src-state FLUSHCOMPLETE --target-dst-state FLUSHING
 sleep 30                                       # ibc1 exceeds upgrade.timeout.timestamp
-retry 10 $RLY tx channel-upgrade execute ibc01 # ibc0 <= chanUpgradeTimeout, ibc1 <= chanUpgradeCancel
+retry 10 $RLY tx channel-upgrade execute $PATH_NAME # ibc0 <= chanUpgradeTimeout, ibc1 <= chanUpgradeCancel
 checkResult orig mockapp-5
 
 echo '##### case 9 #####'
-$RLY tx channel-upgrade init ibc01 ibc0 $fields
-$RLY eth upgrade propose ibc01 ibc1 $fields --timeout-height 0-0 --timeout-timestamp `date -d 30sec +%s%N`
-$RLY tx channel-upgrade init ibc01 ibc1 $fields
-retry 10 $RLY tx channel-upgrade execute ibc01 --target-src-state FLUSHING --target-dst-state FLUSHING
+$RLY tx channel-upgrade init $PATH_NAME ibc0 $fields
+$RLY eth upgrade propose $PATH_NAME ibc1 $fields --timeout-height 0-0 --timeout-timestamp `date -d 30sec +%s%N`
+$RLY tx channel-upgrade init $PATH_NAME ibc1 $fields
+retry 10 $RLY tx channel-upgrade execute $PATH_NAME --target-src-state FLUSHING --target-dst-state FLUSHING
 sleep 30                                       # Both chains exceed upgrade.timeout.timestamp
-retry 10 $RLY tx channel-upgrade execute ibc01 # ibc0,ibc1 <= chanUpgradeTimeout
+retry 10 $RLY tx channel-upgrade execute $PATH_NAME # ibc0,ibc1 <= chanUpgradeTimeout
 checkResult orig mockapp-5
