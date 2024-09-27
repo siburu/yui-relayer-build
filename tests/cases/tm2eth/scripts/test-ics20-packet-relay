@@ -1,0 +1,111 @@
+#!/bin/bash
+
+set -eux
+
+SCRIPT_DIR=$(cd $(dirname ${BASH_SOURCE:-$0}); pwd)
+FIXTURES_DIR=${SCRIPT_DIR}/../fixtures
+
+RELAYER_CONF="$HOME/.yui-relayer"
+RLY_BINARY=${SCRIPT_DIR}/../../../../build/yrly
+RLY="${RLY_BINARY} --debug"
+
+PATH_NAME=ics20-path
+
+TM_ADDRESS=$(${RLY} tendermint keys show ibc0 testkey)
+DEPLOYER_INDEX=0
+BOB_INDEX=2
+
+ADDRESSES_DIR_B="${FIXTURES_DIR}/ethereum/ibc1/addresses"
+ERC20_TOKEN_CONTRACT_B=`cat ${ADDRESSES_DIR_B}/ERC20Token`
+ICS20_BANK_CONTRACT_B=`cat ${ADDRESSES_DIR_B}/ICS20Bank`
+ICS20_TRANSFER_BANK_CONTRACT_B=`cat ${ADDRESSES_DIR_B}/ICS20TransferBank`
+
+MNEMONIC_B=$($RLY config show | jq -r '.chains[] | select(.chain.chain_id == "ibc1").chain.signer.mnemonic')
+RPC_ADDRESS_B=$($RLY config show | jq -r '.chains[] | select(.chain.chain_id == "ibc1").chain.rpc_addr')
+PORT_A=$($RLY paths list --json | jq -r --arg path $PATH_NAME '.[$path].src."port-id"')
+PORT_B=$($RLY paths list --json | jq -r --arg path $PATH_NAME '.[$path].dst."port-id"')
+CHANNEL_A=$($RLY paths list --json | jq -r --arg path $PATH_NAME '.[$path].src."channel-id"')
+CHANNEL_B=$($RLY paths list --json | jq -r --arg path $PATH_NAME '.[$path].dst."channel-id"')
+BOB_ADDRESS=$(cast wallet address --mnemonic "$MNEMONIC_B" --mnemonic-index $BOB_INDEX)
+
+DENOM_A=samoleans
+DENOM_B=$(echo $ERC20_TOKEN_CONTRACT_B | tr '[:upper:]' '[:lower:]')
+
+TX_INTERVAL=3
+
+echo "!!! ibc0(lock) -> ibc1(mint) !!!"
+${RLY} tx transfer $PATH_NAME ibc0 ibc1 "100${DENOM_A}" $BOB_ADDRESS
+sleep ${TX_INTERVAL}
+${RLY} tx relay $PATH_NAME --src-seqs 1
+sleep ${TX_INTERVAL}
+${RLY} tx acks $PATH_NAME --dst-seqs 1
+sleep ${TX_INTERVAL}
+
+echo "!!! ibc1(burn) -> ibc0(unlock) !!!"
+cast send \
+     --rpc-url $RPC_ADDRESS_B \
+     --mnemonic "$MNEMONIC_B" \
+     --mnemonic-index ${BOB_INDEX} \
+     $ICS20_TRANSFER_BANK_CONTRACT_B \
+     'sendTransfer(string,uint256,string,string,string,uint64)' \
+     $PORT_B/$CHANNEL_B/$DENOM_A \
+     100 \
+     $TM_ADDRESS \
+     $PORT_B \
+     $CHANNEL_B \
+     100000
+sleep ${TX_INTERVAL}
+${RLY} tx relay $PATH_NAME --dst-seqs 1
+sleep ${TX_INTERVAL}
+${RLY} tx acks $PATH_NAME --src-seqs 1
+
+echo "!!! ibc1(lock) -> ibc0(mint) !!!"
+cast send \
+     --rpc-url $RPC_ADDRESS_B \
+     --mnemonic "$MNEMONIC_B" \
+     --mnemonic-index ${DEPLOYER_INDEX} \
+     $ERC20_TOKEN_CONTRACT_B \
+     'transfer(address,uint256)' \
+     $BOB_ADDRESS \
+     500
+cast send \
+     --rpc-url $RPC_ADDRESS_B \
+     --mnemonic "$MNEMONIC_B" \
+     --mnemonic-index ${BOB_INDEX} \
+     $ERC20_TOKEN_CONTRACT_B \
+     'approve(address,uint256)' \
+     $ICS20_BANK_CONTRACT_B \
+     500
+cast send \
+     --rpc-url $RPC_ADDRESS_B \
+     --mnemonic "$MNEMONIC_B" \
+     --mnemonic-index ${BOB_INDEX} \
+     $ICS20_BANK_CONTRACT_B \
+     'deposit(address,uint256,address)' \
+     $ERC20_TOKEN_CONTRACT_B \
+     500 \
+     $BOB_ADDRESS
+cast send \
+     --rpc-url $RPC_ADDRESS_B \
+     --mnemonic "$MNEMONIC_B" \
+     --mnemonic-index ${BOB_INDEX} \
+     $ICS20_TRANSFER_BANK_CONTRACT_B \
+     'sendTransfer(string,uint256,string,string,string,uint64)' \
+     $DENOM_B \
+     500 \
+     $TM_ADDRESS \
+     $PORT_B \
+     $CHANNEL_B \
+     100000
+sleep ${TX_INTERVAL}
+${RLY} tx relay $PATH_NAME --dst-seqs 2
+sleep ${TX_INTERVAL}
+${RLY} tx acks $PATH_NAME --src-seqs 2
+
+echo "!!! ibc0(burn) -> ibc1(unlock) !!!"
+${RLY} tx transfer $PATH_NAME ibc0 ibc1 "500${PORT_A}/${CHANNEL_A}/${DENOM_B}" $BOB_ADDRESS
+sleep ${TX_INTERVAL}
+${RLY} tx relay $PATH_NAME --src-seqs 2
+sleep ${TX_INTERVAL}
+${RLY} tx acks $PATH_NAME --dst-seqs 2
+sleep ${TX_INTERVAL}

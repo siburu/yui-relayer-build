@@ -11,11 +11,24 @@ RLY="${RLY_BINARY} --debug"
 CHAINID_ONE=ibc0
 CHAINID_TWO=ibc1
 RLYKEY=testkey
-PATH_NAME=ibc01
+MOCKAPP_PATH=mockapp-path
+ICS20_PATH=ics20-path
+
 
 # add a path between chain0 and chain1
-$RLY paths add $CHAINID_ONE $CHAINID_TWO $PATH_NAME --file=./configs/path.json
+$RLY paths add $CHAINID_ONE $CHAINID_TWO $MOCKAPP_PATH --file=./configs/mockapp-path.json
+$RLY paths add $CHAINID_ONE $CHAINID_TWO $ICS20_PATH   --file=./configs/ics20-path.json
 
-retry 5 $RLY tx clients $PATH_NAME
-retry 5 $RLY tx connection $PATH_NAME
-retry 5 $RLY tx channel $PATH_NAME
+retry 5 $RLY tx clients    $MOCKAPP_PATH
+retry 5 $RLY tx connection $MOCKAPP_PATH
+retry 5 $RLY tx channel    $MOCKAPP_PATH
+
+# copy client-id's from mockapp-path to ics20-path
+$RLY paths edit $ICS20_PATH src client-id $($RLY paths list --json | jq --raw-output --arg path_name $MOCKAPP_PATH '.[$path_name].src."client-id"')
+$RLY paths edit $ICS20_PATH dst client-id $($RLY paths list --json | jq --raw-output --arg path_name $MOCKAPP_PATH '.[$path_name].dst."client-id"')
+
+# copy connection-id's from mockapp-path to ics20-path
+$RLY paths edit $ICS20_PATH src connection-id $($RLY paths list --json | jq --raw-output --arg path_name $MOCKAPP_PATH '.[$path_name].src."connection-id"')
+$RLY paths edit $ICS20_PATH dst connection-id $($RLY paths list --json | jq --raw-output --arg path_name $MOCKAPP_PATH '.[$path_name].dst."connection-id"')
+
+retry 5 $RLY tx channel    $ICS20_PATH
