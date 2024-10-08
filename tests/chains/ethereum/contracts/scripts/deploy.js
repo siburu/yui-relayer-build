@@ -86,11 +86,11 @@ async function deployApp(deployer, ibcHandler) {
     const impl = await prepareImplementation(deployer, proxyV1, contractName, [ibcHandler.target], unsafeAllow);
     saveAddress(contractName, impl);
 
-    await proxyV1.proposeAppVersion(`mockapp-${i}`, {
-      implementation: impl.target,
-      initialCalldata: impl.interface.encodeFunctionData(`__${contractName}_init(string)`, [contractName]),
-      consumed: false,
-    }).then(tx => tx.wait());
+    await proxyV1.proposeAppVersion(
+      `mockapp-${i}`,
+      impl.target,
+      impl.interface.encodeFunctionData(`__${contractName}_init(string)`, [contractName]),
+    ).then(tx => tx.wait());
   }
 
   return proxyV1;
