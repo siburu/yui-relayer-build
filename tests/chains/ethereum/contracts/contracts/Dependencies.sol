@@ -19,8 +19,7 @@ import {OwnableIBCHandler} from "@hyperledger-labs/yui-ibc-solidity/contracts/co
 import {MockClient} from "@hyperledger-labs/yui-ibc-solidity/contracts/clients/mock/MockClient.sol";
 
 import {ERC20Token} from "@hyperledger-labs/yui-ibc-solidity/contracts/apps/20-transfer/ERC20Token.sol";
-import {ICS20Bank} from "@hyperledger-labs/yui-ibc-solidity/contracts/apps/20-transfer/ICS20Bank.sol";
-import {ICS20TransferBank} from "@hyperledger-labs/yui-ibc-solidity/contracts/apps/20-transfer/ICS20TransferBank.sol";
+import {ICS20Transfer} from "@hyperledger-labs/yui-ibc-solidity/contracts/apps/20-transfer/ICS20Transfer.sol";
 
 import {IBCContractUpgradableUUPSMockApp} from "@datachainlab/ethereum-ibc-relay-chain/contracts/IBCContractUpgradableUUPSMockApp.sol";
 

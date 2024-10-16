@@ -86,11 +86,11 @@ async function deployApp(deployer, ibcHandler) {
     const impl = await prepareImplementation(deployer, proxyV1, contractName, [ibcHandler.target], unsafeAllow);
     saveAddress(contractName, impl);
 
-    await proxyV1.proposeAppVersion(`mockapp-${i}`, {
-      implementation: impl.target,
-      initialCalldata: impl.interface.encodeFunctionData(`__${contractName}_init(string)`, [contractName]),
-      consumed: false,
-    }).then(tx => tx.wait());
+    await proxyV1.proposeAppVersion(
+      `mockapp-${i}`,
+      impl.target,
+      impl.interface.encodeFunctionData(`__${contractName}_init(string)`, [contractName]),
+    ).then(tx => tx.wait());
   }
 
   return proxyV1;
@@ -120,11 +120,8 @@ async function main() {
   const erc20token = await deploy(deployer, "ERC20Token", ["simple", "simple", 1000000]);
   saveAddress("ERC20Token", erc20token);
 
-  const ics20bank = await deploy(deployer, "ICS20Bank");
-  saveAddress("ICS20Bank", ics20bank);
-
-  const ics20transferbank = await deploy(deployer, "ICS20TransferBank", [ibcHandler.target, ics20bank.target]);
-  saveAddress("ICS20TransferBank", ics20transferbank);
+  const ics20transfer = await deploy(deployer, "ICS20Transfer", [ibcHandler.target, "transfer"]);
+  saveAddress("ICS20Transfer", ics20transfer);
 
   const app = await deployApp(deployer, ibcHandler);
 
@@ -134,11 +131,9 @@ async function main() {
   const multicall3 = await deploy(deployer, "Multicall3", []);
   saveAddress("Multicall3", multicall3);
 
-  await ibcHandler.bindPort("transfer", ics20transferbank.target);
+  await ibcHandler.bindPort("transfer", ics20transfer.target);
   await ibcHandler.bindPort("mockapp", app.target);
   await ibcHandler.registerClient("mock-client", mockClient.target);
-  await ics20bank.setOperator(ics20transferbank.target);
-
 }
 
 if (require.main === module) {

@@ -17,8 +17,7 @@ BOB_INDEX=2
 
 ADDRESSES_DIR_B="${FIXTURES_DIR}/ethereum/ibc1/addresses"
 ERC20_TOKEN_CONTRACT_B=`cat ${ADDRESSES_DIR_B}/ERC20Token`
-ICS20_BANK_CONTRACT_B=`cat ${ADDRESSES_DIR_B}/ICS20Bank`
-ICS20_TRANSFER_BANK_CONTRACT_B=`cat ${ADDRESSES_DIR_B}/ICS20TransferBank`
+ICS20_TRANSFER_CONTRACT_B=`cat ${ADDRESSES_DIR_B}/ICS20Transfer`
 
 MNEMONIC_B=$($RLY config show | jq -r '.chains[] | select(.chain.chain_id == "ibc1").chain.signer.mnemonic')
 RPC_ADDRESS_B=$($RLY config show | jq -r '.chains[] | select(.chain.chain_id == "ibc1").chain.rpc_addr')
@@ -46,14 +45,13 @@ cast send \
      --rpc-url $RPC_ADDRESS_B \
      --mnemonic "$MNEMONIC_B" \
      --mnemonic-index ${BOB_INDEX} \
-     $ICS20_TRANSFER_BANK_CONTRACT_B \
-     'sendTransfer(string,uint256,string,string,string,uint64)' \
+     $ICS20_TRANSFER_CONTRACT_B \
+     'sendTransfer(string,string,uint256,string,((uint64,uint64),uint64))' \
+     $CHANNEL_B \
      $PORT_B/$CHANNEL_B/$DENOM_A \
      100 \
      $TM_ADDRESS \
-     $PORT_B \
-     $CHANNEL_B \
-     100000
+     '((0,100000),0)'
 sleep ${TX_INTERVAL}
 ${RLY} tx relay $PATH_NAME --dst-seqs 1
 sleep ${TX_INTERVAL}
@@ -74,29 +72,28 @@ cast send \
      --mnemonic-index ${BOB_INDEX} \
      $ERC20_TOKEN_CONTRACT_B \
      'approve(address,uint256)' \
-     $ICS20_BANK_CONTRACT_B \
+     $ICS20_TRANSFER_CONTRACT_B \
      500
 cast send \
      --rpc-url $RPC_ADDRESS_B \
      --mnemonic "$MNEMONIC_B" \
      --mnemonic-index ${BOB_INDEX} \
-     $ICS20_BANK_CONTRACT_B \
-     'deposit(address,uint256,address)' \
+     $ICS20_TRANSFER_CONTRACT_B \
+     'deposit(address,address,uint256)' \
+     $BOB_ADDRESS \
      $ERC20_TOKEN_CONTRACT_B \
-     500 \
-     $BOB_ADDRESS
+     500
 cast send \
      --rpc-url $RPC_ADDRESS_B \
      --mnemonic "$MNEMONIC_B" \
      --mnemonic-index ${BOB_INDEX} \
-     $ICS20_TRANSFER_BANK_CONTRACT_B \
-     'sendTransfer(string,uint256,string,string,string,uint64)' \
+     $ICS20_TRANSFER_CONTRACT_B \
+     'sendTransfer(string,string,uint256,string,((uint64,uint64),uint64))' \
+     $CHANNEL_B \
      $DENOM_B \
      500 \
      $TM_ADDRESS \
-     $PORT_B \
-     $CHANNEL_B \
-     100000
+     '((0,100000),0)'
 sleep ${TX_INTERVAL}
 ${RLY} tx relay $PATH_NAME --dst-seqs 2
 sleep ${TX_INTERVAL}
